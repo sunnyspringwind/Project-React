@@ -1,13 +1,31 @@
 import React, { useEffect, useState } from "react";
 
 function Slider({ imgApi }) {
-  const [imgCard, setImageCard] = useState(imgApi?.[0] || {});
+  const [imgCard, setImageCard] = useState(imgApi[0] || {});
+  let [counter, setCounter] = useState(0);
 
   useEffect(() => {
     if (imgApi && imgApi.length > 0) {
       setImageCard(imgApi[0]);
+      
     }
   }, [imgApi]);
+
+  useEffect(()=>{
+    const slideshow = () =>{
+console.log("works");
+    }
+    slideshow()
+  },[imgCard])
+// setInterval(() => {
+//    if (imgApi && imgApi.length > 0) {
+// let index = 0;
+//         if (index < (imgApi.length - 1))
+//       setImageCard(imgApi[index]);
+//         index + 1;
+      
+//    }  
+// }, 3000);
 
   const displayImage = (index) => {
     if (imgApi && imgApi[index]) {
@@ -16,11 +34,13 @@ function Slider({ imgApi }) {
   };
 
   const ImageButtons = () =>
-    imgApi?.map((object, index) => (
+    imgApi?.map((object, index) => {
+      return(
       <button key={object.id} onClick={() => displayImage(index)}>
         o
       </button>
-    ));
+      )
+});
 
   return (
     <>

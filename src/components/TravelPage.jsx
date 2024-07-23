@@ -1,11 +1,11 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import FetchData from "../utils/FetchData";
-import { Link, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
 import Reviews from "./Reviews";
 import GiveStars from "../utils/GiveStars";
+import MapComponent from "../utils/LocationMap";
 
 function TravelPage() {
   const { id } = useParams();
@@ -111,10 +111,9 @@ function TravelPage() {
                 Book Now
               </button>
             </div>
-            <div
-              id="location"
-              className="bg-emerald-100 w-full h-[400px] my-4"
-            ></div>
+            <div id="location" className="bg-emerald-100 w-full h-[400px] my-4">
+              <MapComponent locationName={travelPkg.name} />
+            </div>
             <div id="reviews">
               <Reviews hotelId={travelPkg.id} />
               <Footer />

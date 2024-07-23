@@ -16,13 +16,9 @@ function Hotels() {
   );
 
   const [hotels, setHotels] = useState([]);
-  const [route, setRoute] = useState(``);
-  useEffect(() => {
-    FetchData("hotels", setHotels);
-  }, []);
 
   useEffect(() => {
-    const goTo = () => {};
+    FetchData("hotels", setHotels);
   }, []);
 
   return (

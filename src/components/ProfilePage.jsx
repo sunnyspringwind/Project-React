@@ -6,7 +6,7 @@ export default function Profile() {
         
 
     return (
-      <>
+      <>a
         <div className="relative w-[86vw] h-screen  mx-[7vw]">
           <Header />
           <div className="relative bg-red-400 w-full h-[55%] rounded mb-[70px] ">

@@ -6,6 +6,8 @@ import Header from "./Header";
 import Footer from "./Footer"
 import Reviews from "./Reviews"
 import GiveStars from "../utils/GiveStars";
+import MapComponent from "../utils/LocationMap";
+import { popup } from "leaflet";
 
 function HotelPage() {
 
@@ -31,6 +33,10 @@ function HotelPage() {
 
      const scrollToSection = (id) => {
        document.getElementById(id).scrollIntoView({ behavior: "smooth" });
+     };
+
+     const showPopup = () => {
+        alert("Your booking is confirmed! Happy Travels");
      };
 
      if (!hotel) {
@@ -111,14 +117,14 @@ function HotelPage() {
                   <GiveStars rating = {hotel.rating}/>
                 </span>
                 <p className="w-[75%] font-fredericka">{hotel.desc}</p>
-                <button className="absolute right-[10%] top-[40%] bg-blue-500 py-2 px-5 rounded text-white font-mono">
+                <button onClick={showPopup} className="absolute right-[10%] top-[40%] bg-blue-500 py-2 px-5 rounded text-white font-mono">
                   Book Now
                 </button>
               </div>
               <div
                 id="location"
                 className="bg-emerald-100 w-full h-[400px] my-4"
-              ></div>
+              ><MapComponent locationName={hotel.name}/></div>
               <div id="reviews">
                 <Reviews hotelId={hotel.id} />
                 <Footer />
