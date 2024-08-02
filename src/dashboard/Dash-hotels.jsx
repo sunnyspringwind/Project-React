@@ -3,6 +3,7 @@ import FetchData from "../utils/FetchData";
 
 export default function HotelsDash() {
   const [hotelList, setHotelList] = useState([]);
+  
   const [newFormVisible, setNewFormVisibility] = useState(false);
   const [newHotel, setNewHotel] = useState({
     id: "",
@@ -15,107 +16,149 @@ export default function HotelsDash() {
     desc: "",
   });
 
-  const saveHotelToLocalStorage = () =>
-    setHotelList([...hotelList, newHotel]);
-    localStorage.setItem("hotels", JSON.stringify(hotelList));
+  const saveHotelToLocalStorage = (updatedList) => {
+    localStorage.setItem("hotels", JSON.stringify(updatedList));
+  };
 
   const getHotelFromLocalStorage = () => {
-    const storedData = localStorage.getItem("hotel");
+    const storedData = localStorage.getItem("hotels");
     if (storedData) {
       setHotelList(JSON.parse(storedData));
-      console.log(hotelList)
+      console.log(hotelList);
     }
+  }
+  useEffect(getHotelFromLocalStorage,[]);
+
+    const handleChange = (e) => {
+      const { name, value, type, checked } = e.target;
+
+      setNewHotel((prevState) => {
+        const newState = {
+          ...prevState,
+          [name]: type === "checkbox" ? checked : value, //checked ticked  is true
+        };
+        return newState;
+      });
+    };
+
+    //Edit Mode From Here   check edit button and delete 
+  const [currentHotelIndex, setCurrentHotelIndex] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+
+  const handleEditMode = (index) => {
+    setNewFormVisibility(true);
+
+    setCurrentHotelIndex(index);
+    setNewHotel(hotelList[index]);
+    setEditMode(true);
   };
 
-  useEffect(() => {
-    getHotelFromLocalStorage();
-  }, []);
+  const handleDelete = (index) => {
+    const updatedList = [...hotelList];
+    updatedList.splice(index, 1);
+    setHotelList(updatedList);
+    saveHotelToLocalStorage(updatedList);
+  };
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
+  const handleSaveHotel = (e) => {
+    // e.preventDefault();
+    let updatedList;
+    if (editMode)
+      updatedList = hotelList.map((hotel, index) =>
+        currentHotelIndex === index ? newHotel : hotel
+      );
+    else updatedList = [...hotelList, newHotel];
 
-    setNewHotel((prevState) => {
-      const newState = {
-        ...prevState,
-        [name]: type === "checkbox" ? checked : value,  //checked ticked  is true
-      };
-      return newState;
+    setHotelList(updatedList);
+    saveHotelToLocalStorage(updatedList);
+    setNewHotel({
+      id: "",
+      name: "",
+      price: 0,
+      img: "",
+      rating: 0,
+      freeCancellation: false,
+      reserveNow: false,
+      desc: "",
     });
-  };
-
-  const handleSaveHotel = () => {
-   saveHotelToLocalStorage();
-   setNewHotel({
-     id: "",
-     name: "",
-     price: 0,
-     img: "",
-     rating: 0,
-     freeCancellation: false,
-     reserveNow: false,
-     desc: "",
-   });
-
   };
 
   return (
     <>
-      <div className="flex h-full text-white p-10 flex-col items-center relative ">
-        <h1 className="w-full text-center font-fredericka font-semibold text-3xl mb-7">
+      <div className="w-full h-full text-white pt-5 flex-col items-center relative overflow-auto ">
+        <h1 className="w-full text-center text-black font-fredericka font-semibold text-3xl mb-7">
           Hotels Settings
         </h1>
-        <div>
-          <table className=" border-yellow-400 border-2  border-separate w-auto">
-            <thead className=" bg-blue-600 border-2 border-red-400">
+        <div className="flex text-white flex-col items-center w-full px-10 ">
+          <table className=" border-separate table-fixed w-full bg-yellow-400">
+            <thead className=" bg-blue-600 center">
               <tr>
-                <th>Id</th>
+                <th className="w-10 py-3">Id</th>
                 <th>Name</th>
-                <th>Price</th>
+                <th className="w-[110px]">Price</th>
                 <th>Image</th>
-                <th>Rating</th>
-                <th>Free Cancellation</th>
-                <th>Reserve Now</th>
-                <th>Description</th>
-                <th>Updates</th>
+                <th className="w-[60px]">Rating</th>
+                <th className="w-[100px]">Free Cancellation</th>
+                <th className="w-[80px]">Reserve Now</th>
+                <th className="w-[210px]">Description</th>
+                <th className="w-[90px]">Updates</th>
               </tr>
             </thead>
             <tbody>
               {hotelList.map((hotel, index) => (
                 <tr
-                  className=" bg-white text-blue-600 font-mono text-center "
+                  className=" bg-white text-blue-600 font-mono break-words text-center whitespace-normal "
                   key={index}
                 >
-                  <td className="p-3">{hotel.id}</td>
+                  <td className="py-2">{(newHotel.id = index + 1)}</td>
                   <td>{hotel.name}</td>
                   <td>{hotel.price}</td>
                   <td>{hotel.img}</td>
                   <td>{hotel.rating}</td>
                   <td>{hotel.freeCancellation ? "True" : "False"}</td>
                   <td>{hotel.reserveNow ? "True" : "False"}</td>
-                  <td className="overflow-auto">
-                    {hotel.desc.slice(0, 50)}...
+                  <td className=" px-2 text-left whitespace-nowrap overflow-hidden text-ellipsis ">
+                    {hotel.desc}
                   </td>
                   <td>
-                    <button className="hover:underline hover:text-red-500">
+                    <button
+                      type="submit"
+                      className="hover:underline hover:text-red-500"
+                      onClick={() => handleEditMode(index)}
+                    >
                       Edit
                     </button>
-                    |{" "}
-                    <button className="hover:underline hover:text-red-500">
+                    |
+                    <button
+                      className="hover:underline hover:text-red-500"
+                      onClick={() => {
+                        handleDelete(index);
+                      }}
+                    >
                       Delete
                     </button>
                   </td>
                 </tr>
               ))}
             </tbody>
-            <tfoot>
-              <tr></tr>
-            </tfoot>
+            <tfoot></tfoot>
           </table>
           <div>
             <button
               className="p-2 py-1  my-7 rounded font-fredericka bg-blue-500"
               onClick={() => {
                 setNewFormVisibility(true);
+                setEditMode(false);
+                  setNewHotel({
+                    id: "",
+                    name: "",
+                    price: 0,
+                    img: "",
+                    rating: 0,
+                    freeCancellation: false,
+                    reserveNow: false,
+                    desc: "",
+                  });
               }}
             >
               Add New
@@ -123,16 +166,18 @@ export default function HotelsDash() {
 
             {newFormVisible && (
               <div className="bg-[#444745] w-[400px] p-4 font-fredericka flex flex-col justify-center rounded-md">
-                <h1 className="text-center text-2xl mb-5">Add New Hotel</h1>
+                <h1 className="text-center text-2xl mb-5">
+                  {editMode ? "Update Hotel" : "Add New Hotel"}
+                </h1>
                 <form className=" text-blue-500 text-xl">
-                  <label htmlFor="id">Id :</label>
+                  {/* <label htmlFor="id">Id :</label>
                   <input
                     type="text"
                     onChange={handleChange}
                     value={newHotel.id}
                     name="id"
                     className="mb-4 mx-5 pl-2"
-                  ></input>
+                  ></input> */}
                   <br />
                   <label htmlFor="name">Name :</label>
                   <input
@@ -205,7 +250,7 @@ export default function HotelsDash() {
                     onClick={handleSaveHotel}
                     className="bg-white px-2 mx-10"
                   >
-                    Save Hotel
+                    {editMode ? "Update Hotel" : "Save Hotel"}
                   </button>
                   <button
                     type="button"

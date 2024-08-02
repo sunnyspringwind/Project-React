@@ -18,7 +18,9 @@ function HotelPage() {
     useEffect(() => {
       const fetchData = async () => {
         try {
-          const response = await fetch(`http://localhost:3000/hotels/${id}`);
+          const response =
+            await fetch(`http://localhost:5058/wandermate_backend/hotel/${id}
+`);
           const data = await response.json();
           setHotel(data);
         } catch (error) {
@@ -54,32 +56,32 @@ function HotelPage() {
               <div className="flex w-full h-[80vh]">
                 <div className="w-[60%] pr-4 ">
                   <img
-                    src={hotel.img}
+                    src={hotel.image}
                     className="w-full h-full rounded-md object-cover"
                   ></img>
                 </div>
                 <div className="relative w-[40%] flex flex-wrap">
                   <div className="w-[50%] h-[50%] pr-2">
                     <img
-                      src={hotel.img}
+                      src={hotel.image}
                       className="h-full object-cover rounded-md "
                     ></img>
                   </div>
                   <div className="w-[50%] h-[50%] ">
                     <img
-                      src={hotel.img}
+                      src={hotel.image}
                       className="h-full object-cover rounded-md "
                     ></img>
                   </div>
                   <div className="w-[50%] h-[50%] pr-2 pt-2 ">
                     <img
-                      src={hotel.img}
+                      src={hotel.image}
                       className="h-full object-cover rounded-md"
                     ></img>
                   </div>
                   <div className="w-[50%] h-[50%] pt-2">
                     <img
-                      src={hotel.img}
+                      src={hotel.image}
                       className="h-full object-cover rounded-md "
                     ></img>
                   </div>
@@ -116,7 +118,7 @@ function HotelPage() {
                 <span className="text-2xl font-bold font-fredericka">
                   <GiveStars rating = {hotel.rating}/>
                 </span>
-                <p className="w-[75%] font-fredericka">{hotel.desc}</p>
+                <p className="w-[75%] font-fredericka">{hotel.description}</p>
                 <button onClick={showPopup} className="absolute right-[10%] top-[40%] bg-blue-500 py-2 px-5 rounded text-white font-mono">
                   Book Now
                 </button>

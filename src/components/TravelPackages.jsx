@@ -28,7 +28,7 @@ function TravelPackages() {
           <Header />
           <div className="relative w-full h-[1000px] flex flex-col">
             {travelPackages.map((travelPkg, index) => (
-              <div className="relative w-full h-4/6 shadow-lg flex mb-5 overflow-hidden gap-5 ">
+              <div key={index} className="relative w-full h-4/6 shadow-lg flex mb-5 overflow-hidden gap-5 ">
                 <div className=" w-2/4 h-full object-cover">
                   <img src={travelPkg.img}></img>
                 </div>

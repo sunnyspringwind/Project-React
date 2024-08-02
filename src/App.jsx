@@ -12,6 +12,7 @@ import Hotels from "./components/Hotels.jsx";
 import HotelPage from "./components/HotelPage.jsx";
 import Profile from "./components/ProfilePage.jsx";
 import Dashboard from "./dashboard/dashboard.jsx";
+import SignIn from "./components/SignIn.jsx";
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
             <Route path="/hotels" element={<Hotels />} />
             <Route path="/hotels/:id" element={<HotelPage />} />
             <Route path="/signup" element={<SignUp />} />
+            <Route path="/signin" element={<SignIn />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/admin/*" element={<Dashboard />} />
           </Routes>

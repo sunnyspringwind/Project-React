@@ -1,7 +1,9 @@
 
 const FetchData = async (dataOf, setState) => {
   try {
-    const response = await fetch(`http://localhost:3000/${dataOf}`);
+    const response = await fetch(
+      `http://localhost:5058/wandermate_backend/${dataOf}`
+    );
     if (!response.ok) {
       throw new Error("the host aint responding to my request");
     }

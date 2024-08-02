@@ -1,32 +1,40 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import signupboat from "../assets/signupboat.svg";
 import { Link } from "react-router-dom";
 
-import PasswordCheck  from "../utils/PasswordCheck";
-
 function SignUp() {
 
-  let [userData, setUserData] = useState({
+  const [userCredentials, setCredentialsList] = useState([]);
+  const [userData, setUserData] = useState({
     username : "",
+    name : "",
     email : "",
     password : "",
-    confirm : ""
   })
+
+
+  const saveCredentialsToLocalStorage = () => {
+    const updatedList = [...userCredentials, userData];
+    setCredentialsList(updatedList);
+    localStorage.setItem("userCredentials", JSON.stringify(updatedList));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    saveCredentialsToLocalStorage();
+    setUserData({
+      username: "",
+      email: "",
+      password: "",
+      name: "",
+    });
   }
 
   const handleChange = (e) => {
     const {name, value} = e.target;
     setUserData({...userData, [name]:value})
-    console.log(value);
+  }
 
-  const saveData = (e) => {
-    handleSubmit(e);
-    (userData.password != "") ?     PasswordCheck(userData.confirm, userData.password) : null;
-  }
-  }
     return (
       <>
         <div className="flex fixed bg-black w-screen h-screen justify-center items-center">
@@ -43,6 +51,15 @@ function SignUp() {
                 placeholder="Username"
                 name="username"
                 value={userData.username}
+                onChange={handleChange}
+              />
+              <input
+                className="border-2 bg-blue-100 border-blue-400 text-xl indent-5  w-full rounded-md "
+                type="text"
+                id="name"
+                placeholder="Full name"
+                name="name"
+                value={userData.name}
                 onChange={handleChange}
               />
               <input
@@ -68,8 +85,8 @@ function SignUp() {
                 type="password"
                 id="confirmPassowrd"
                 placeholder="Confirm Password"
-                name="confirm"
-                value={userData.confirm}
+                name="name"
+                value={userData.name}
                 onChange={handleChange}
               />
               <button className="w-full bg-blue-500 rounded-md">Sign Up</button>

@@ -1,23 +1,37 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import signin from "../assets/signin.svg";
 import { Link } from "react-router-dom";
 
 function SignIn() {
 
+  const [userCredentials, setCredentialsList] = useState([]);
+
   let [formData, setFormData] = useState({
     username : "",
     password : ""
   });
+
+  const getCredentialsFromLocalStorage = () => {
+    const storedData = localStorage.getItem("userCredentials");
+   
+    if (storedData) {
+      const data = JSON.parse(storedData);
+      setCredentialsList(data);
+    } 
+  };
+  useEffect(() => getCredentialsFromLocalStorage, []);
+
   const handleSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
     console.log("submitted", formData);
   }
 
   const handleChange = (e) => {
     const {name, value} = e.target;
     setFormData({...formData, [name]:value})
-    console.log(value);
   }
+  console.log("data",userCredentials);
+
   return (
     <>
       <div className="flex fixed bg-black w-screen h-screen justify-center items-center">

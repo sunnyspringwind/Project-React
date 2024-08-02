@@ -1,122 +1,117 @@
 import React, { useEffect, useState } from "react";
+import FetchData from "../utils/FetchData";
 
-export default function DestinationsDash() {
-  const [destinationList, setDestinationList] = useState([]);
+export default function ThingsToDoDash() {
+  const [thingsToDo, setThingsToDo] = useState([]);
   const [editMode, setEditMode] = useState(false);
-  const [currentDestiIndex, setCurrentDestiIndex] = useState(null);
+  const [currentToDoIndex, setCurrentToDoIndex] = useState(null);
   const [newFormVisible, setNewFormVisibility] = useState(false);
-  const [newDestination, setNewDestination] = useState({
+  const [newToDo, setNewToDo] = useState({
     id: "",
-    title: "",
-    weather: "",
+    name: "",
+    price: "",
     img: "",
-    desc: "",
   });
 
-  const saveDestinationToLocalStorage = (updatedList) => {
-    localStorage.setItem("destinations", JSON.stringify(updatedList));
+  const saveThingsToDoToLocalStorage = (updatedList) => {
+    localStorage.setItem("thingsToDo", JSON.stringify(updatedList));
   };
-  const getDestinationFromLocalStorage = () => {
-    const storedData = localStorage.getItem("destinations");
+  const getThingsToDoFromLocalStorage = () => {
+    const storedData = localStorage.getItem("thingsToDo");
     if (storedData) {
-      setDestinationList(JSON.parse(storedData));
+      setThingsToDo(JSON.parse(storedData));
     }
   };
 
   useEffect(() => {
-    getDestinationFromLocalStorage();
-         
+    getThingsToDoFromLocalStorage();
   }, []);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
-    setNewDestination((prevState) => {
+    const { name, value } = e.target;
+    setNewToDo((prevState) => {
       const newState = {
         ...prevState,
-        [name]: type === "checkbox" ? checked : value, //checked ticked  is true
+        [name]: value,
       };
       return newState;
     });
   };
 
-   const handleEditMode = (index) => {
-     setNewFormVisibility(true);
-     setEditMode(true);
-     setCurrentDestiIndex(index);
-     setNewDestination(destinationList[index]);
-   };
+  const handleEditMode = (index) => {
+    setNewFormVisibility(true);
+    setEditMode(true);
+    setCurrentToDoIndex(index);
+    setNewToDo(thingsToDo[index]);
+  };
 
-   const handleDelete = (index) => {
-     const updatedList = [...destinationList];
-     updatedList.splice(index, 1);
-     setDestinationList(updatedList);
-     saveDestinationToLocalStorage(updatedList);
-   };
+  const handleDelete = (index) => {
+    const updatedList = [...thingsToDo];
+    updatedList.splice(index, 1);
+    setThingsToDo(updatedList);
+    saveThingsToDoToLocalStorage(updatedList);
+  };
 
-  const handleSaveDestination = (e) => {
+  const handleSaveToDo = () => {
     let updatedList;
-    if(editMode)  
-   updatedList = destinationList.map((desti, index) =>
-     currentDestiIndex === index ? newDestination : desti
-   );
- 
-    
-    else
-      updatedList = [...destinationList, newDestination];
-    setDestinationList(updatedList);
-    saveDestinationToLocalStorage(updatedList);
-    setNewDestination({
+    if (editMode)
+      updatedList = thingsToDo.map((desti, index) =>
+        currentToDoIndex === index ? newToDo : desti
+      );
+    else updatedList = [...thingsToDo, newToDo];
+
+    setThingsToDo(updatedList);
+    saveThingsToDoToLocalStorage(updatedList);
+    setNewToDo({
       id: "",
-      title: "",
-      weather: "",
+      name: "",
+      price: "",
       img: "",
-      desc: "",
     });
   };
 
   return (
     <>
       <div className="flex h-full text-white pt-5 flex-col items-center relative ">
-        <h1 className="w-full text-center text-black font-fredericka font-semibold text-3xl mb-7">
-          Destinations Settings
+        <h1 className="w-full text-black text-center font-fredericka font-semibold text-3xl mb-7">
+          Things To Do Settings
         </h1>
         <div className="flex flex-col items-center px-10">
           <table className=" bg-yellow-400  border-separate table-fixed w-full">
             <thead className=" bg-blue-600 ">
               <tr>
-                <th className="w-[4rem] h-[3rem]">Id</th>
-                <th>Title</th>
-                <th className="w-[11rem]">Weather</th>
+                <th className="w-[4rem] py-2">Id</th>
+                <th>Name</th>
+                <th>Price</th>
                 <th>Image</th>
-                <th className="w-[22rem]">Description</th>
-                <th className="w-[7rem]">Updates</th>
+                <th className="w-[9rem]">Updates</th>
               </tr>
             </thead>
             <tbody>
-              {destinationList.map((desti, index) => (
+              {thingsToDo.map((toDo, index) => (
                 <tr
                   className=" bg-white text-blue-600 font-mono text-center break-words whitespace-normal"
                   key={index}
                 >
-                  <td className="py-2">{desti.id}</td>
-                  <td>{desti.title}</td>
-                  <td>{desti.weather}</td>
-                  <td>{desti.img}</td>
-                  <td className=" overflow-hidden overflow-ellipsis text-left px-2">
-                    {desti.desc}
-                  </td>
+                  <td className="py-3\2">{toDo.id}</td>
+                  <td>{toDo.name}</td>
+                  <td>{toDo.price}</td>
+                  <td>{toDo.img}</td>
                   <td>
                     <button
                       className="hover:underline hover:text-red-500"
-                      onClick={() => handleEditMode(index)}
+                      onClick={() => {
+                        handleEditMode(index);
+                      }}
                     >
                       Edit
                     </button>
                     |
                     <button
                       className="hover:underline hover:text-red-500"
-                      onClick={() => handleDelete(index)}
+                      onClick={() => {
+                        handleDelete(index);
+                      }}
                     >
                       Delete
                     </button>
@@ -133,6 +128,7 @@ export default function DestinationsDash() {
               className="p-2 py-1  my-7 rounded font-fredericka bg-blue-500"
               onClick={() => {
                 setNewFormVisibility(true);
+                setEditMode(false);
               }}
             >
               Add New
@@ -141,33 +137,33 @@ export default function DestinationsDash() {
             {newFormVisible && (
               <div className="bg-[#444745] w-[400px] p-4 font-fredericka flex flex-col justify-center rounded-md">
                 <h1 className="text-center text-2xl mb-5">
-                  {editMode ? "Update Destination" : " Add New Destination"}
+                  {editMode ? "Update Things To Do" : " Add Things To Do"}
                 </h1>
                 <form className=" text-blue-500 text-xl">
                   <label htmlFor="id">Id :</label>
                   <input
                     type="text"
                     onChange={handleChange}
-                    value={newDestination.id}
+                    value={newToDo.id}
                     name="id"
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
-                  <label htmlFor="title">Title :</label>
+                  <label htmlFor="name">Name :</label>
                   <input
                     type="text"
                     onChange={handleChange}
-                    value={newDestination.title}
-                    name="title"
+                    value={newToDo.name}
+                    name="name"
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
-                  <label htmlFor="weather">Weather :</label>
+                  <label htmlFor="price">Price :</label>
                   <input
                     type="text"
                     onChange={handleChange}
-                    value={newDestination.weather}
-                    name="weather"
+                    value={newToDo.price}
+                    name="price"
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
@@ -175,29 +171,20 @@ export default function DestinationsDash() {
                   <input
                     type="text"
                     onChange={handleChange}
-                    value={newDestination.img}
+                    value={newToDo.img}
                     name="img"
                     className="mb-4 mx-5 pl-2 overflow-auto"
-                  ></input>
-                  <br />
-                  <label htmlFor="desc">Description :</label>
-                  <input
-                    type="text"
-                    onChange={handleChange}
-                    value={newDestination.desc}
-                    name="desc"
-                    className="mb-4 mx-5 overflow-auto"
                   ></input>
                   <br />
 
                   <button
                     type="button"
-                    onClick={handleSaveDestination}
+                    onClick={handleSaveToDo}
                     className="bg-white px-2 mx-10"
                   >
                     {editMode
-                      ? "Update Destination"
-                      : " Add Destination"}
+                      ? "Update Things To Do"
+                      : " Save Things To Do"}
                   </button>
                   <button
                     type="button"

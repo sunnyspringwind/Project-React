@@ -18,8 +18,9 @@ function Hotels() {
   const [hotels, setHotels] = useState([]);
 
   useEffect(() => {
-    FetchData("hotels", setHotels);
+    FetchData("hotel", setHotels);
   }, []);
+
 
   return (
     <>

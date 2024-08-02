@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from "react";
+import FetchData from "../utils/FetchData";
 
-export default function DestinationsDash() {
+export default function TopDestinationsDash() {
   const [destinationList, setDestinationList] = useState([]);
-  const [editMode, setEditMode] = useState(false);
-  const [currentDestiIndex, setCurrentDestiIndex] = useState(null);
+   const [editMode, setEditMode] = useState(false);
+   const [currentDestiIndex, setCurrentDestiIndex] = useState(null);
   const [newFormVisible, setNewFormVisibility] = useState(false);
   const [newDestination, setNewDestination] = useState({
     id: "",
-    title: "",
-    weather: "",
+    name: "",
+    price: "",
     img: "",
     desc: "",
   });
 
   const saveDestinationToLocalStorage = (updatedList) => {
-    localStorage.setItem("destinations", JSON.stringify(updatedList));
+    localStorage.setItem("topDestinations", JSON.stringify(updatedList));
   };
   const getDestinationFromLocalStorage = () => {
-    const storedData = localStorage.getItem("destinations");
+    const storedData = localStorage.getItem("topDestinations");
     if (storedData) {
       setDestinationList(JSON.parse(storedData));
     }
@@ -25,51 +26,49 @@ export default function DestinationsDash() {
 
   useEffect(() => {
     getDestinationFromLocalStorage();
-         
   }, []);
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-
+    const { name, value } = e.target;
     setNewDestination((prevState) => {
       const newState = {
         ...prevState,
-        [name]: type === "checkbox" ? checked : value, //checked ticked  is true
+        [name]:value
       };
       return newState;
     });
   };
 
-   const handleEditMode = (index) => {
-     setNewFormVisibility(true);
-     setEditMode(true);
-     setCurrentDestiIndex(index);
-     setNewDestination(destinationList[index]);
-   };
+     const handleEditMode = (index) => {
+       setNewFormVisibility(true);
+       setEditMode(true);
+       setCurrentDestiIndex(index);
+       setNewDestination(destinationList[index]);
+     };
 
-   const handleDelete = (index) => {
-     const updatedList = [...destinationList];
-     updatedList.splice(index, 1);
-     setDestinationList(updatedList);
-     saveDestinationToLocalStorage(updatedList);
-   };
+     const handleDelete = (index) => {
+       const updatedList = [...destinationList];
+       updatedList.splice(index, 1);
+       setDestinationList(updatedList);
+       saveDestinationToLocalStorage(updatedList);
+     };
 
-  const handleSaveDestination = (e) => {
+  const handleSaveDestination = () => {
     let updatedList;
-    if(editMode)  
-   updatedList = destinationList.map((desti, index) =>
-     currentDestiIndex === index ? newDestination : desti
-   );
- 
-    
+    if (editMode) 
+ updatedList = destinationList.map((desti, index) =>
+   currentDestiIndex === index ? newDestination : desti
+ );
+      
     else
-      updatedList = [...destinationList, newDestination];
+        updatedList = [...destinationList, newDestination];
+
     setDestinationList(updatedList);
     saveDestinationToLocalStorage(updatedList);
     setNewDestination({
       id: "",
-      title: "",
-      weather: "",
+      name: "",
+      price: "",
       img: "",
       desc: "",
     });
@@ -78,19 +77,19 @@ export default function DestinationsDash() {
   return (
     <>
       <div className="flex h-full text-white pt-5 flex-col items-center relative ">
-        <h1 className="w-full text-center text-black font-fredericka font-semibold text-3xl mb-7">
-          Destinations Settings
+        <h1 className="w-full text-black text-center font-fredericka font-semibold text-3xl mb-7">
+          Top Destinations Settings
         </h1>
         <div className="flex flex-col items-center px-10">
           <table className=" bg-yellow-400  border-separate table-fixed w-full">
             <thead className=" bg-blue-600 ">
               <tr>
-                <th className="w-[4rem] h-[3rem]">Id</th>
-                <th>Title</th>
-                <th className="w-[11rem]">Weather</th>
+                <th className="w-[4rem] py-2">Id</th>
+                <th>Name</th>
+                <th>Price</th>
                 <th>Image</th>
                 <th className="w-[22rem]">Description</th>
-                <th className="w-[7rem]">Updates</th>
+                <th className="w-[9rem]">Updates</th>
               </tr>
             </thead>
             <tbody>
@@ -99,24 +98,28 @@ export default function DestinationsDash() {
                   className=" bg-white text-blue-600 font-mono text-center break-words whitespace-normal"
                   key={index}
                 >
-                  <td className="py-2">{desti.id}</td>
-                  <td>{desti.title}</td>
-                  <td>{desti.weather}</td>
+                  <td className="py-3\2">{desti.id}</td>
+                  <td>{desti.name}</td>
+                  <td>{desti.price}</td>
                   <td>{desti.img}</td>
-                  <td className=" overflow-hidden overflow-ellipsis text-left px-2">
+                  <td className="overflow-hidden overflow-ellipsis text-left px-2">
                     {desti.desc}
                   </td>
                   <td>
                     <button
                       className="hover:underline hover:text-red-500"
-                      onClick={() => handleEditMode(index)}
+                      onClick={() => {
+                        handleEditMode(index);
+                      }}
                     >
                       Edit
                     </button>
                     |
                     <button
                       className="hover:underline hover:text-red-500"
-                      onClick={() => handleDelete(index)}
+                      onClick={() => {
+                        handleDelete(index);
+                      }}
                     >
                       Delete
                     </button>
@@ -133,6 +136,7 @@ export default function DestinationsDash() {
               className="p-2 py-1  my-7 rounded font-fredericka bg-blue-500"
               onClick={() => {
                 setNewFormVisibility(true);
+                setEditMode(false);
               }}
             >
               Add New
@@ -141,7 +145,9 @@ export default function DestinationsDash() {
             {newFormVisible && (
               <div className="bg-[#444745] w-[400px] p-4 font-fredericka flex flex-col justify-center rounded-md">
                 <h1 className="text-center text-2xl mb-5">
-                  {editMode ? "Update Destination" : " Add New Destination"}
+                  {editMode
+                    ? "Update Top Destination"
+                    : " Add Top Destination"}
                 </h1>
                 <form className=" text-blue-500 text-xl">
                   <label htmlFor="id">Id :</label>
@@ -153,21 +159,21 @@ export default function DestinationsDash() {
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
-                  <label htmlFor="title">Title :</label>
+                  <label htmlFor="name">Name :</label>
                   <input
                     type="text"
                     onChange={handleChange}
-                    value={newDestination.title}
-                    name="title"
+                    value={newDestination.name}
+                    name="name"
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
-                  <label htmlFor="weather">Weather :</label>
+                  <label htmlFor="price">Price :</label>
                   <input
                     type="text"
                     onChange={handleChange}
-                    value={newDestination.weather}
-                    name="weather"
+                    value={newDestination.price}
+                    name="price"
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
@@ -196,8 +202,8 @@ export default function DestinationsDash() {
                     className="bg-white px-2 mx-10"
                   >
                     {editMode
-                      ? "Update Destination"
-                      : " Add Destination"}
+                      ? "Update Top Destination"
+                      : " Save Top Destination"}
                   </button>
                   <button
                     type="button"
