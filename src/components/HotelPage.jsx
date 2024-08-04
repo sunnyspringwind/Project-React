@@ -7,7 +7,7 @@ import Footer from "./Footer"
 import Reviews from "./Reviews"
 import GiveStars from "../utils/GiveStars";
 import MapComponent from "../utils/LocationMap";
-import { popup } from "leaflet";
+
 
 function HotelPage() {
 

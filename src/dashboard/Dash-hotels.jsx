@@ -1,87 +1,143 @@
 import React, { useEffect, useState } from "react";
-import FetchData from "../utils/FetchData";
+import axios from "axios";
 
 export default function HotelsDash() {
   const [hotelList, setHotelList] = useState([]);
-  
+  const [imgList, setImageList] = useState([]);
   const [newFormVisible, setNewFormVisibility] = useState(false);
   const [newHotel, setNewHotel] = useState({
-    id: "",
+   
     name: "",
     price: 0,
-    img: "",
+    image: [],
     rating: 0,
     freeCancellation: false,
     reserveNow: false,
-    desc: "",
+    description: "",
   });
 
-  const saveHotelToLocalStorage = (updatedList) => {
-    localStorage.setItem("hotels", JSON.stringify(updatedList));
-  };
 
-  const getHotelFromLocalStorage = () => {
-    const storedData = localStorage.getItem("hotels");
-    if (storedData) {
-      setHotelList(JSON.parse(storedData));
-      console.log(hotelList);
+  const getHotelsFromApi = async () => {
+    try{
+    const response = await axios.get(
+      `http://localhost:5058/wandermate_backend/hotel`
+    );
+    const sortedHotels = response.data.sort((a, b) => a.id - b.id);
+    setHotelList(sortedHotels);
+  }
+  catch(error){
+    console.log(error);
+  }
+  }
+
+  const addHotelToApi = async (hotel) => {
+    //post needs a data as well
+    try {
+      const response = await axios.post(
+        `http://localhost:5058/wandermate_backend/hotel`, hotel
+      );
+      await getHotelsFromApi();
+    } catch (error) {
+      console.log(error);
+    }
+  }; 
+  
+  const updateHotel = async (id, hotel) => {
+    try {
+      await axios.put(
+        `http://localhost:5058/wandermate_backend/hotel/${id}`, hotel);
+      const updatedList =hotelList.map((oldHotel) => (id === oldHotel.id) ? hotel : oldHotel)
+        return updatedList;
+    } catch (error) {
+      console.log(error);
     }
   }
-  useEffect(getHotelFromLocalStorage,[]);
+
+  const deleteHotel = async (id) => {
+    try {
+      await axios.delete(
+        `http://localhost:5058/wandermate_backend/hotel/${id}`
+      );
+       setHotelList((prevList) => prevList.filter((hotel) => hotel.id !== id));
+    } catch (error) {
+      console.log(console.error);
+    }
+  }
 
     const handleChange = (e) => {
-      const { name, value, type, checked } = e.target;
-
+      const { name, value, type, checked, files } = e.target;
+      //for image
       setNewHotel((prevState) => {
+          // if (type === "file") {
+          //   console.log(Array.from(files));
+          //   const images = Array.from(files);
+          //   setImageList(()=>{
+          //     images.map(img=>{
+          //       img.name}
+          //     )
+          //   })
+            // Handle file input
+            // return {
+              // ...prevState,
+              // [name]:imgList // Convert FileList to Array
+          //   };
+          // }
+          // else{
         const newState = {
           ...prevState,
           [name]: type === "checkbox" ? checked : value, //checked ticked  is true
-        };
+        }
         return newState;
-      });
+      }
+    )
     };
 
     //Edit Mode From Here   check edit button and delete 
-  const [currentHotelIndex, setCurrentHotelIndex] = useState(null);
+  const [currentHotelId, setCurrentHotelId] = useState(null);
   const [editMode, setEditMode] = useState(false);
 
-  const handleEditMode = (index) => {
+  const handleEditMode = (id) => {
     setNewFormVisibility(true);
+    setCurrentHotelId(id);
 
-    setCurrentHotelIndex(index);
-    setNewHotel(hotelList[index]);
+    hotelList.map(hotel => {
+      if (id == hotel.id) 
+        setNewHotel(hotel)})
+
     setEditMode(true);
   };
 
-  const handleDelete = (index) => {
-    const updatedList = [...hotelList];
-    updatedList.splice(index, 1);
-    setHotelList(updatedList);
-    saveHotelToLocalStorage(updatedList);
+  const handleDelete =async (id) => {
+    deleteHotel(id);
   };
 
-  const handleSaveHotel = (e) => {
+  const handleSaveHotel = async (e) => {
     // e.preventDefault();
     let updatedList;
-    if (editMode)
-      updatedList = hotelList.map((hotel, index) =>
-        currentHotelIndex === index ? newHotel : hotel
-      );
-    else updatedList = [...hotelList, newHotel];
-
+    if (editMode){
+    updatedList = await updateHotel(currentHotelId, newHotel);    //handles the updating hotel directly dont need to iterate through list returns the list as well. 
+      }
+    else {
+      addHotelToApi(newHotel);
+      updatedList = [...hotelList];
+    }
     setHotelList(updatedList);
-    saveHotelToLocalStorage(updatedList);
     setNewHotel({
-      id: "",
+      
       name: "",
       price: 0,
-      img: "",
+      image: [],
       rating: 0,
       freeCancellation: false,
       reserveNow: false,
-      desc: "",
+      description: "",
     });
   };
+
+     useEffect(() => {
+       getHotelsFromApi();
+                
+     }, []);
 
   return (
     <>
@@ -110,21 +166,21 @@ export default function HotelsDash() {
                   className=" bg-white text-blue-600 font-mono break-words text-center whitespace-normal "
                   key={index}
                 >
-                  <td className="py-2">{(newHotel.id = index + 1)}</td>
+                  <td className="py-2">{hotel.id}</td>
                   <td>{hotel.name}</td>
                   <td>{hotel.price}</td>
-                  <td>{hotel.img}</td>
+                  <td>{hotel.image[0]}</td>
                   <td>{hotel.rating}</td>
                   <td>{hotel.freeCancellation ? "True" : "False"}</td>
                   <td>{hotel.reserveNow ? "True" : "False"}</td>
                   <td className=" px-2 text-left whitespace-nowrap overflow-hidden text-ellipsis ">
-                    {hotel.desc}
+                    {hotel.description}
                   </td>
                   <td>
                     <button
-                      type="submit"
+                      type="button"
                       className="hover:underline hover:text-red-500"
-                      onClick={() => handleEditMode(index)}
+                      onClick={() => handleEditMode(hotel.id)}
                     >
                       Edit
                     </button>
@@ -132,7 +188,7 @@ export default function HotelsDash() {
                     <button
                       className="hover:underline hover:text-red-500"
                       onClick={() => {
-                        handleDelete(index);
+                        handleDelete(hotel.id);
                       }}
                     >
                       Delete
@@ -149,16 +205,15 @@ export default function HotelsDash() {
               onClick={() => {
                 setNewFormVisibility(true);
                 setEditMode(false);
-                  setNewHotel({
-                    id: "",
-                    name: "",
-                    price: 0,
-                    img: "",
-                    rating: 0,
-                    freeCancellation: false,
-                    reserveNow: false,
-                    desc: "",
-                  });
+                setNewHotel({
+                  name: "",
+                  price: 0,
+                  image: [],
+                  rating: 0,
+                  freeCancellation: false,
+                  reserveNow: false,
+                  description: "",
+                });
               }}
             >
               Add New
@@ -170,14 +225,6 @@ export default function HotelsDash() {
                   {editMode ? "Update Hotel" : "Add New Hotel"}
                 </h1>
                 <form className=" text-blue-500 text-xl">
-                  {/* <label htmlFor="id">Id :</label>
-                  <input
-                    type="text"
-                    onChange={handleChange}
-                    value={newHotel.id}
-                    name="id"
-                    className="mb-4 mx-5 pl-2"
-                  ></input> */}
                   <br />
                   <label htmlFor="name">Name :</label>
                   <input
@@ -197,14 +244,14 @@ export default function HotelsDash() {
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
-                  <label htmlFor="img">Image :</label>
+                  {/* <label htmlFor="image">Image :</label>
                   <input
-                    type="text"
+                    type="file"
+                    multiple
                     onChange={handleChange}
-                    value={newHotel.img}
-                    name="img"
+                    name="image"
                     className="mb-4 mx-5 pl-2 overflow-auto"
-                  ></input>
+                  ></input> */}
                   <br />
                   <label htmlFor="rating">Rating :</label>
                   <input
@@ -234,13 +281,13 @@ export default function HotelsDash() {
                     className="mb-4 mx-5"
                   ></input>
                   <br />
-                  <label htmlFor="desc">Description :</label>
+                  <label htmlFor="description">Description :</label>
 
                   <input
+                    name="description"
                     type="text"
                     onChange={handleChange}
-                    value={newHotel.desc}
-                    name="desc"
+                    value={newHotel.description}
                     className="mb-4 mx-5 overflow-auto"
                   ></input>
                   <br />
