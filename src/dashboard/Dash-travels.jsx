@@ -1,38 +1,85 @@
+import axios from "axios";
 import React, { useEffect, useState } from "react";
-import FetchData from "../utils/FetchData";
 
 export default function TravelsDash() {
   const [travelList, setTravelPackages] = useState([]);
-  const [currentTravelIndex, setCurrentTravelIndex] = useState(null);
+  const [currentTravelPkgId, setCurrentTravelPkgId] = useState(null);
   const [editMode, setEditMode] = useState(false);
+  const [imgList, setImageList] = useState([]);
+  const [imgFields, setImageFields] = useState([1]);
   const [newFormVisible, setNewFormVisibility] = useState(false);
   const [newTravelPackage, setNewTravelPackage] = useState({
-    id: "",
-    name: "",
-    price: 0,
-    img: "",
-    desc: "",
+    title: "",
+    weather: "",
+    image: [],
+    description: "",
   });
 
-  const saveTravelPkgToLocalStorage = (updatedList) => {
-  localStorage.setItem("travelPkgs", JSON.stringify(updatedList));
-  }
-
-  const getTravelPkgFromLocalStorage = () => {
-    const storedData = localStorage.getItem("travelPkgs");
-    if (storedData) {
-      setTravelPackages(JSON.parse(storedData));
-      console.log(travelList);
+  const getTravelPackagesFromApi = async() => {
+    try {
+        const response = await axios.get(
+          "http://localhost:5058/wandermate_backend/travelPackages"
+          );
+          const sortedList =  response.data.sort((a,b)=>a.id - b.id);
+            setTravelPackages(sortedList);
+    } catch (error) {
+      console.log(error);
     }
-  };
+  }
+  const addTravelPackageToApi = async (travelPackage) => {
+    //post needs a data as well
+    try {
+      const response = await axios.post(
+        `http://localhost:5058/wandermate_backend/travelPackages`,
+        travelPackage
+      );
+      await getTravelPackagesFromApi(); //update afterwards
+    } catch (error) {
+      console.log(error);
+    }
+  }; 
+
+    const updateTravelPackage = async (id, travelPkg) => {
+      try {
+        await axios.put(
+          `http://localhost:5058/wandermate_backend/travelPackages/${id}`,
+          travelPkg
+        );
+        const updatedList = travelList.map((oldPackage) =>
+          id === oldPackage.id ? travelPkg : oldPackage
+        );
+        return updatedList;
+      } catch (error) {
+        console.log(error);
+      }
+    };
+
+      const deleteTravelPackage = async (id) => {
+        try {
+          await axios.delete(
+            `http://localhost:5058/wandermate_backend/travelPackages/${id}`
+          );
+          setTravelPackages((prevList) =>
+            prevList.filter((travelPkg) => travelPkg.id !== id)
+          );
+        } catch (error) {
+          console.log(console.error);
+        }
+      };
 
   useEffect(() => {
-    getTravelPkgFromLocalStorage();
+   getTravelPackagesFromApi();
   }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
+    if (name.startsWith("image")){
+      const index = parseInt(name.split("-")[1],10);
+      const newImageList = [...imgList];
+      newImageList[index] = value || "";
+      setImageList(newImageList);
+    }
+    else
     setNewTravelPackage((prevState) => {
       const newState = {
         ...prevState,
@@ -42,40 +89,95 @@ export default function TravelsDash() {
     });
   };
 
+  //  useEffect(() => {
+  //    if (editMode && currentTravelPkgId !== null) {
+  //      // Update the image list of the package being edited
+  //      setTravelPackages((prevList) =>
+  //        prevList.map((pkg) =>
+  //          pkg.id === currentTravelPkgId ? { ...pkg, image: imgList } : pkg
+  //        )
+  //      ); 
+  //      setNewTravelPackage((prevPackage) => ({
+  //        ...prevPackage,
+  //        image: imgList,
+  //      }));
+      
+  //    } else {
+  //      // Only update the new package's image list
+  //      setNewTravelPackage((prevPackage) => ({
+  //        ...prevPackage,
+  //        image: imgList,
+  //      }));
+  //    }
+  //  }, [imgList, editMode, currentTravelPkgId]);
 
-   const handleEditMode = (index) => {
+    const validateImages = () =>{
+      const inputList = [...imgList]
+      const validList = inputList.filter(value => value);
+       if (JSON.stringify(validList) !== JSON.stringify(imgList)) {
+         setImageList(validList);
+       }
+    }
+
+    useEffect(() => {
+
+      validateImages();
+      setNewTravelPackage((prevState) => ({
+        ...prevState,
+        image: imgList,
+      }));
+    }, [imgList]);
+
+
+   const handleEditMode = (id) => {
     setNewFormVisibility(true);
     setEditMode(true);
-    setCurrentTravelIndex(index);
-    setNewTravelPackage(travelList[index]);
+    setCurrentTravelPkgId(id);
+       travelList.map((travelPkg) => {
+         if (id == travelPkg.id) {
+           setNewTravelPackage(travelPkg);
+           setImageList(travelPkg.image);
+         }
+       });
    
    };
 
-   const handleDelete = (index) => {
-     const updatedList = [...travelList];
-     updatedList.splice(index, 1);
-     setTravelPackages(updatedList);
-     saveTravelPkgToLocalStorage(updatedList);
+   const handleDelete = (id) => {
+    deleteTravelPackage(id);
    };
 
-  const handleSaveTravel = () => {
-     let updatedList;
-     if (editMode)
-      updatedList = travelList.map((travelPkg, index) => currentTravelIndex === index ? newTravelPackage : travelPkg);
-    else
-     updatedList = ([...travelList, newTravelPackage]);
-
-    setTravelPackages(updatedList);
-    saveTravelPkgToLocalStorage(updatedList);
+   const resetForm = () =>{
     setNewTravelPackage({
-      id: "",
-      name: "",
-      price: 0,
-      img: "",
-      desc: "",
+      title: "",
+      weather: "",
+      image: [],
+      description: "",
     });
-  };
 
+    setImageList([]);
+    setImageFields([1]);
+   }
+  const handleSaveTravel = async() => {
+     let updatedList;
+     if (editMode) {
+      updatedList = await updateTravelPackage(currentTravelPkgId, newTravelPackage);
+      await getTravelPackagesFromApi();
+    }
+    else{
+    await addTravelPackageToApi(newTravelPackage);
+    await getTravelPackagesFromApi();
+  }
+    resetForm();
+  };
+  
+
+  const addMoreImageFields = () =>{
+    if (imgFields.length <5)
+    setImageFields([...imgFields, imgFields.length+1])
+  }
+{
+
+}
   return (
     <>
       <div className="w-full text-white h-full pt-5 flex-col overflow-auto">
@@ -88,30 +190,42 @@ export default function TravelsDash() {
               <tr>
                 <th className="w-[4rem] h-[3rem]">Id</th>
                 <th>Title</th>
-                <th className="w-[8rem]">Price $</th>
+                <th>Weather</th>
                 <th>Image</th>
                 <th className="w-[26rem]">Description</th>
                 <th className="w-[8rem]">Updates</th>
               </tr>
             </thead>
             <tbody>
-              {travelList.map((travekPkg, index) => (
+              {travelList.map((travelPkg, index) => (
                 <tr
                   className=" bg-white text-blue-600 font-mono text-center "
                   key={index}
                 >
-                  <td className="py-2">{travekPkg.id}</td>
-                  <td>{travekPkg.name}</td>
-                  <td>{travekPkg.price}</td>
-                  <td>{travekPkg.img}</td>
+                  <td className="py-2">{travelPkg.id}</td>
+                  <td>{travelPkg.title}</td>
+                  <td>{travelPkg.weather}</td>
+                  <td>
+                    <div className="h-40 flex overflow-auto">
+                      {travelPkg.image.map((imgSrc, imgIndex) => (
+                        <img
+                          className=" h-full w-full object-contain px-1"
+                          key={imgIndex}
+                          src={imgSrc}
+                          alt={`TravelPkg ${travelPkg.id} Image ${imgIndex}`}
+                        />
+                      ))}
+                    </div>
+                  </td>
                   <td className=" overflow-hidden overflow-ellipsis text-left px-2">
-                    {travekPkg.desc}
+                    {travelPkg.description}
                   </td>
                   <td>
                     <button
+                      type="button"
                       className="hover:underline hover:text-red-500"
                       onClick={() => {
-                        handleEditMode(index);
+                        handleEditMode(travelPkg.id);
                       }}
                     >
                       Edit
@@ -120,7 +234,7 @@ export default function TravelsDash() {
                     <button
                       className="hover:underline hover:text-red-500"
                       onClick={() => {
-                        handleDelete(index);
+                        handleDelete(travelPkg.id);
                       }}
                     >
                       Delete
@@ -139,6 +253,7 @@ export default function TravelsDash() {
               onClick={() => {
                 setNewFormVisibility(true);
                 setEditMode(false);
+                resetForm();
               }}
             >
               Add New
@@ -152,49 +267,54 @@ export default function TravelsDash() {
                     : "Add New Traval Package"}
                 </h1>
                 <form className=" text-blue-500 text-xl">
-                  <label htmlFor="id">Id :</label>
-                  <input
-                    type="text"
-                    onChange={handleChange}
-                    value={newTravelPackage.id}
-                    name="id"
-                    className="mb-4 mx-5 pl-2"
-                  ></input>
-                  <br />
                   <label htmlFor="name">Name :</label>
                   <input
                     type="text"
                     onChange={handleChange}
-                    value={newTravelPackage.name}
-                    name="name"
+                    value={newTravelPackage.title}
+                    name="title"
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
-                  <label htmlFor="price">Price :</label>
+                  <label htmlFor="weather">Weather :</label>
                   <input
                     type="text"
                     onChange={handleChange}
-                    value={newTravelPackage.price}
-                    name="price"
+                    value={newTravelPackage.weather}
+                    name="weather"
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
-                  <label htmlFor="img">Image :</label>
-                  <input
-                    type="text"
-                    onChange={
-                      handleChange
-                    }
-                    value={newTravelPackage.img}
-                    name="img"
-                    className="mb-4 mx-5 pl-2 overflow-auto"
-                  ></input>
+            
+                  <label htmlFor="image">Destination Images :</label>
+                  <button
+                    className="hover:underline hover:text-red-500 text-sm pb-3 "
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addMoreImageFields();
+                    }}
+                    hidden={imgFields.length >= 5}
+                  >
+                    Add More
+                  </button>
+                  {imgFields.map((index) => (
+                    <div key={index}>
+                      <label>Image {index}:</label>
+                      <input
+                        type="url"
+                        onChange={handleChange}
+                        value={newTravelPackage.image[index - 1] || ""} //incase there are no imgs
+                        name={`image-${index - 1}`}
+                        className="mb-4 mx-5 pl-2 overflow-auto"
+                      />
+                    </div>
+                  ))}
                   <br />
-                  <label htmlFor="desc">Description :</label>
+                  <label htmlFor="description">Description :</label>
                   <textarea
                     onChange={handleChange}
-                    value={newTravelPackage.desc}
-                    name="desc"
+                    value={newTravelPackage.description}
+                    name="description"
                     className="mb-4 mx-5 w-[90%] overflow-auto"
                   ></textarea>
                   <br />

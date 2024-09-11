@@ -26,7 +26,7 @@ const TopTravelPacakges = () => {
       >
         <img
           className="h-8 w-8 rounded-3xl mr-2"
-          src={topTravelPackages[1].img}
+          src={topTravelPackages[1].image[0]}
         />
         Top Travel Packages
       </button>
@@ -37,17 +37,20 @@ const TopTravelPacakges = () => {
           {topTravelPackages.slice(0, 4).map((travelPackage) => (
             <div
               key={travelPackage.id}
-              className="relative h-[310px] rounded-lg overflow-hidden m-2 hover:-translate-y-4"
+              className="relative h-[310px] rounded-lg overflow-hidden m-2 hover:-translate-y-4 "
             >
-              <img src={travelPackage.img} className="h-full object-cover " />
+              <img
+                src={travelPackage.image[0]}
+                className="h-full object-cover w-full"
+              />
               <button className="absolute top-3 left-3 ">
                 <HeartIcon />
               </button>
               <span className="backdrop-blur-sm absolute bottom-3 left-3 text-white font-semibold">
-                {travelPackage.name}
+                {travelPackage.title}
               </span>
-              <span className="backdrop-blur-sm absolute bottom-3 right-3 text-white font-semibold">
-                ${travelPackage.price}
+              <span className="backdrop-blur-sm absolute bottom-3 right-3 text-white font-semibold ">
+                {travelPackage.weather.slice(0, 10)}
               </span>
             </div>
           ))}

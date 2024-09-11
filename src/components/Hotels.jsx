@@ -27,13 +27,13 @@ function Hotels() {
       <div className="relative w-[86vw] h-screen  lg:mx-[7vw]">
         <Header />
         <div className="relative w-full h-auto flex flex-col">
-          {hotels.map((hotel, index) => (
+          {hotels.map((hotel) => (
             <div
               key={hotel.id}
               className="relative w-full h-[300px] shadow-lg flex mb-5 overflow-hidden gap-5 "
             >
               <div className=" w-2/4 h-full object-cover">
-                <img src={hotel.img}></img>
+                <img src={hotel.image[0]}></img>
               </div>
               <div className=" w-2/4 h-full flex justify-center items-center flex-col gap-2">
                 <span className="font-semibold text-xl">{hotel.name}</span>

@@ -4,9 +4,12 @@ import axios from "axios";
 export default function HotelsDash() {
   const [hotelList, setHotelList] = useState([]);
   const [imgList, setImageList] = useState([]);
+    const [currentHotelId, setCurrentHotelId] = useState(null);
+    const [editMode, setEditMode] = useState(false);
   const [newFormVisible, setNewFormVisibility] = useState(false);
+  const [imageFields, setImageFields] = useState([1]);
   const [newHotel, setNewHotel] = useState({
-   
+
     name: "",
     price: 0,
     image: [],
@@ -17,6 +20,7 @@ export default function HotelsDash() {
   });
 
 
+  // get hotel
   const getHotelsFromApi = async () => {
     try{
     const response = await axios.get(
@@ -30,18 +34,21 @@ export default function HotelsDash() {
   }
   }
 
+  // add hotel
   const addHotelToApi = async (hotel) => {
     //post needs a data as well
     try {
       const response = await axios.post(
         `http://localhost:5058/wandermate_backend/hotel`, hotel
       );
-      await getHotelsFromApi();
+      await getHotelsFromApi();   //updateList afterwards
     } catch (error) {
       console.log(error);
     }
   }; 
   
+
+  //update hotel
   const updateHotel = async (id, hotel) => {
     try {
       await axios.put(
@@ -53,6 +60,8 @@ export default function HotelsDash() {
     }
   }
 
+
+  // delete hotel
   const deleteHotel = async (id) => {
     try {
       await axios.delete(
@@ -64,66 +73,66 @@ export default function HotelsDash() {
     }
   }
 
-    const handleChange = (e) => {
-      const { name, value, type, checked, files } = e.target;
-      //for image
-      setNewHotel((prevState) => {
-          // if (type === "file") {
-          //   console.log(Array.from(files));
-          //   const images = Array.from(files);
-          //   setImageList(()=>{
-          //     images.map(img=>{
-          //       img.name}
-          //     )
-          //   })
-            // Handle file input
-            // return {
-              // ...prevState,
-              // [name]:imgList // Convert FileList to Array
-          //   };
-          // }
-          // else{
-        const newState = {
-          ...prevState,
-          [name]: type === "checkbox" ? checked : value, //checked ticked  is true
-        }
-        return newState;
-      }
-    )
-    };
+       useEffect(() => {
+         getHotelsFromApi();
+       }, []);
 
-    //Edit Mode From Here   check edit button and delete 
-  const [currentHotelId, setCurrentHotelId] = useState(null);
-  const [editMode, setEditMode] = useState(false);
+    const handleChange = (e) => {
+      const { name, value, type, checked } = e.target;
+      // for image
+      if (name.startsWith("image")) {
+         const index = parseInt(name.split("-")[1], 10);
+         const newImgList = [...imgList];
+         newImgList[index] = value || "";
+         setImageList(newImgList);
+        }
+      else
+        setNewHotel((prevState) => {
+          const newState = {   
+            ...prevState,
+            [name]: type === "checkbox" ? checked : value, //checked ticked  is true
+          };
+          return newState;
+        })}
+
+          const validateImages = () => {
+            const inputList = [...imgList];
+            const validList = inputList.filter((value) => value);
+           if (JSON.stringify(validList) !== JSON.stringify(imgList)) {
+             setImageList(validList);
+           }
+          };
+
+     useEffect(() => {
+      validateImages();
+         setNewHotel((prevState) => ({
+           ...prevState,
+           image: imgList,
+         }));
+       }
+     , [imgList]);
+
 
   const handleEditMode = (id) => {
     setNewFormVisibility(true);
     setCurrentHotelId(id);
-
-    hotelList.map(hotel => {
-      if (id == hotel.id) 
-        setNewHotel(hotel)})
-
     setEditMode(true);
+    hotelList.map(hotel => {
+      if (id == hotel.id){ 
+        setNewHotel(hotel)
+        setImageList(hotel.image);
+      }
+      })
+
   };
 
   const handleDelete =async (id) => {
     deleteHotel(id);
   };
 
-  const handleSaveHotel = async (e) => {
-    // e.preventDefault();
-    let updatedList;
-    if (editMode){
-    updatedList = await updateHotel(currentHotelId, newHotel);    //handles the updating hotel directly dont need to iterate through list returns the list as well. 
-      }
-    else {
-      addHotelToApi(newHotel);
-      updatedList = [...hotelList];
-    }
-    setHotelList(updatedList);
+  
+  const resetForm = () => {
     setNewHotel({
-      
       name: "",
       price: 0,
       image: [],
@@ -132,13 +141,30 @@ export default function HotelsDash() {
       reserveNow: false,
       description: "",
     });
+    setImageList([]);
+    setImageFields([1]);
   };
 
-     useEffect(() => {
-       getHotelsFromApi();
-                
-     }, []);
+  const handleSaveHotel = async () => {
+    // e.preventDefault();
+    let updatedList;
+    if (editMode){
+    updatedList = await updateHotel(currentHotelId, newHotel);    //handles the updating hotel directly dont need to iterate through list returns the list as well. 
+         setHotelList(updatedList);
+ }
+    else {
+      await addHotelToApi(newHotel);
+      await getHotelsFromApi();
+    }
+    resetForm();
+  };
 
+    const addMoreImageFields = () =>{
+      if (imageFields.length < 5) {
+        // Limit to 5 fields
+        setImageFields([...imageFields, imageFields.length + 1]);
+      }
+    }
   return (
     <>
       <div className="w-full h-full text-white pt-5 flex-col items-center relative overflow-auto ">
@@ -169,7 +195,21 @@ export default function HotelsDash() {
                   <td className="py-2">{hotel.id}</td>
                   <td>{hotel.name}</td>
                   <td>{hotel.price}</td>
-                  <td>{hotel.image[0]}</td>
+                  {/* <td>{hotel.image.join(", ")}</td> */}
+
+                  <td>
+                    <div className="h-40 flex overflow-auto">
+                      {hotel.image.map((imgSrc, imgIndex) => (
+                        <img
+                          className=" h-full w-full object-contain px-1"
+                          key={imgIndex}
+                          src={imgSrc}
+                          alt={`Hotel ${hotel.id} Image ${imgIndex}`}
+                        />
+                      ))}
+                    </div>
+                  </td>
+
                   <td>{hotel.rating}</td>
                   <td>{hotel.freeCancellation ? "True" : "False"}</td>
                   <td>{hotel.reserveNow ? "True" : "False"}</td>
@@ -203,17 +243,9 @@ export default function HotelsDash() {
             <button
               className="p-2 py-1  my-7 rounded font-fredericka bg-blue-500"
               onClick={() => {
-                setNewFormVisibility(true);
-                setEditMode(false);
-                setNewHotel({
-                  name: "",
-                  price: 0,
-                  image: [],
-                  rating: 0,
-                  freeCancellation: false,
-                  reserveNow: false,
-                  description: "",
-                });
+                 setNewFormVisibility(true);
+                 setEditMode(false);
+                resetForm();
               }}
             >
               Add New
@@ -244,14 +276,32 @@ export default function HotelsDash() {
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
-                  {/* <label htmlFor="image">Image :</label>
-                  <input
-                    type="file"
-                    multiple
-                    onChange={handleChange}
-                    name="image"
-                    className="mb-4 mx-5 pl-2 overflow-auto"
-                  ></input> */}
+
+                  <label htmlFor="image">Hotel Images : </label>
+                  <button
+                    className="hover:underline hover:text-red-500 text-sm pb-3 "
+                    onClick={(e) => {
+                      e.preventDefault();
+                      addMoreImageFields();
+                    }}
+                    hidden={imageFields.length >= 5}
+                  >
+                    Add More
+                  </button>
+
+                  {imageFields.map((index) => (
+                    <div key={index}>
+                      <label>Image {index}:</label>
+                      <input
+                        type="url"
+                        onChange={handleChange}
+                        value={newHotel.image[index - 1] || ""} //incase there are no imgs
+                        name={`image-${index - 1}`}
+                        className="mb-4 mx-5 pl-2 overflow-auto"
+                      />
+                    </div>
+                  ))}
+
                   <br />
                   <label htmlFor="rating">Rating :</label>
                   <input
@@ -294,7 +344,10 @@ export default function HotelsDash() {
 
                   <button
                     type="button"
-                    onClick={handleSaveHotel}
+                    onClick={() => {
+                      handleSaveHotel();
+                  
+                    }}
                     className="bg-white px-2 mx-10"
                   >
                     {editMode ? "Update Hotel" : "Save Hotel"}
@@ -304,6 +357,7 @@ export default function HotelsDash() {
                     className="bg-white px-2 pl-2"
                     onClick={() => {
                       setNewFormVisibility(false);
+                      setImageFields([1]);
                     }}
                   >
                     Cancel

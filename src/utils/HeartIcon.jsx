@@ -8,13 +8,14 @@ function HeartIcon() {
   //    return <div>Loading....</div>;
   //  }
 
-  const varClassName = `fas fa-star bg-white p-1 rounded-2xl text-xl stroke-[3rem] stroke-${stroke} text-${heartColor}`;
+  const varClassName = `fas fa-star bg-white p-1 rounded-[100%] text-xl ${
+    heartColor === "red-500" ? "text-red-500" : "text-white"
+  } ${stroke === "white" ? "stroke-white" : "stroke-black"}`;
 
-  const like = () => {
-   
-    heartColor === "white" ? setColor("red-500") : setColor("white"); 
-    stroke === "black" ? setStroke("none") : setStroke("black"); 
-  };
+   const like = () => {
+     setColor((prevColor) => (prevColor === "white" ? "red-500" : "white"));
+     setStroke((prevStroke) => (prevStroke === "black" ? "white" : "black"));
+   };
 
   return (
     <i onClick={like} className={varClassName} />

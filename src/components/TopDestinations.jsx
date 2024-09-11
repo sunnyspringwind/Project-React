@@ -11,7 +11,7 @@ const TopDestinations = () => {
 
 
   useEffect(() => {
-    FetchData("topDestinations", setTopDestinations);
+    FetchData("destination", setTopDestinations);
   }, []); // Empty dependency array ensures this runs only once
  
    if (!topDestinations || topDestinations.length === 0) {
@@ -29,7 +29,7 @@ const TopDestinations = () => {
       >
         <img
           className="h-8 w-8 rounded-3xl mr-2"
-          src={topDestinations[1].img}
+          src={topDestinations[1].image[0]}
         />
         Top Destinations
       </button>
@@ -37,20 +37,20 @@ const TopDestinations = () => {
       {/* true and something is true false and something is false */}
       {isVisible && (
         <div className="grid grid-flow-col gap-3 mb-6">
-          {topDestinations.map((desti) => (
+          {topDestinations.slice(0,4).map((desti) => (
             <div
               key={desti.id}
               className="relative h-[310px] rounded-lg overflow-hidden m-2"
             >
-              <img src={desti.img} className="h-full object-cover " />
+              <img src={desti.image[0]} className="h-full object-cover " />
               <button className="absolute top-3 left-3 ">
                 <HeartIcon />
               </button>
               <span className="absolute bottom-3 left-3 text-white font-semibold">
-                {desti.name}
+                {desti.title}
               </span>
               <span className="absolute bottom-3 right-3 text-white font-semibold">
-                ${desti.price}
+                {desti.weather.slice(0,10)}
               </span>
             </div>
           ))}

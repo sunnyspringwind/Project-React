@@ -1,36 +1,85 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function DestinationsDash() {
   const [destinationList, setDestinationList] = useState([]);
   const [editMode, setEditMode] = useState(false);
-  const [currentDestiIndex, setCurrentDestiIndex] = useState(null);
+  const [currentDestiId, setCurrentDestiId] = useState(null);
   const [newFormVisible, setNewFormVisibility] = useState(false);
+  const [imgList, setImageList] = useState([]);
+  const [imgFields, setImageFields] = useState([1]);
   const [newDestination, setNewDestination] = useState({
-    id: "",
     title: "",
     weather: "",
-    img: "",
-    desc: "",
+    image: [],
+    description: "",
   });
 
-  const saveDestinationToLocalStorage = (updatedList) => {
-    localStorage.setItem("destinations", JSON.stringify(updatedList));
+  const addDestinationToApi = async() => {
+     try {
+         const response = axios.post(
+           "http://localhost:5058/wandermate_backend/destination",
+           newDestination
+         );
+       await getDestinationsFromApi(); //updateList afterwards
+     } catch (error) {
+       console.log(error);
+     }
+ 
   };
-  const getDestinationFromLocalStorage = () => {
-    const storedData = localStorage.getItem("destinations");
-    if (storedData) {
-      setDestinationList(JSON.parse(storedData));
-    }
+  const getDestinationsFromApi = async() => {
+     try{
+    const response = await axios.get(
+      `http://localhost:5058/wandermate_backend/destination`
+    );
+    const sortedDestinations = response.data.sort((a, b) => a.id - b.id);
+    setDestinationList(sortedDestinations);
+  }
+  catch(error){
+    console.log(error);
+  }
   };
 
+  const updateDestination = async(id, desti) => {
+      try {
+        await axios.put(
+          `http://localhost:5058/wandermate_backend/destination/${id}`,
+          desti
+        );
+        const updatedList = destinationList.map((oldDesti) =>
+          id === oldDesti.id ? desti : oldDesti
+        );
+        return updatedList;
+      } catch (error) {
+        console.log(error);
+      }
+  }
+
+    const deleteDestination = async (id) => {
+      try {
+        await axios.delete(
+          `http://localhost:5058/wandermate_backend/destination/${id}`
+        );
+        setDestinationList((prevList) => prevList.filter((destination) => destination.id !== id));
+      } catch (error) {
+        console.log(console.error);
+      }
+    };
+
   useEffect(() => {
-    getDestinationFromLocalStorage();
-         
+    getDestinationsFromApi();    
   }, []);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-
+    if (name.startsWith("image")) {
+      const index = parseInt(name.split("-")[1], 10);
+   
+      const newImgList = [...imgList];
+      newImgList[index] = value || "";
+      setImageList(newImgList);
+    }
+    else
     setNewDestination((prevState) => {
       const newState = {
         ...prevState,
@@ -40,44 +89,77 @@ export default function DestinationsDash() {
     });
   };
 
-   const handleEditMode = (index) => {
+   const validateImages = () => {
+     const inputList = [...imgList];
+     const validList = inputList.filter((value) => value);  //makes sures truthy values
+      if (JSON.stringify(validList) !== JSON.stringify(imgList)) {
+        setImageList(validList);
+      }
+   };
+
+  useEffect(()=>{
+    validateImages();
+    setNewDestination((prevState)=>({
+      ...prevState,
+      image: imgList
+    }));
+  },[imgList]);
+
+   const handleEditMode = (id) => {
      setNewFormVisibility(true);
      setEditMode(true);
-     setCurrentDestiIndex(index);
-     setNewDestination(destinationList[index]);
+     setCurrentDestiId(id);
+    destinationList.map(desti =>{
+      if (id === desti.id) {
+      setNewDestination(desti);
+      setImageList(desti.image);
+      }
+    })
    };
 
-   const handleDelete = (index) => {
-     const updatedList = [...destinationList];
-     updatedList.splice(index, 1);
-     setDestinationList(updatedList);
-     saveDestinationToLocalStorage(updatedList);
+   const handleDelete = (id) => {
+      deleteDestination(id);
    };
 
-  const handleSaveDestination = (e) => {
+     const resetForm = () => {
+       setNewDestination({
+         name: "",
+         price: 0,
+         image: [],
+         rating: 0,
+         freeCancellation: false,
+         reserveNow: false,
+         description: "",
+       });
+       setImageList([]);
+       setImageFields([1]);
+     };
+
+  const handleSaveDestination = async() => {
     let updatedList;
-    if(editMode)  
-   updatedList = destinationList.map((desti, index) =>
-     currentDestiIndex === index ? newDestination : desti
-   );
- 
-    
+    if(editMode)  {
+      updatedList = await updateDestination(currentDestiId, newDestination);
+      setDestinationList(updatedList); 
+    }
     else
-      updatedList = [...destinationList, newDestination];
-    setDestinationList(updatedList);
-    saveDestinationToLocalStorage(updatedList);
-    setNewDestination({
-      id: "",
-      title: "",
-      weather: "",
-      img: "",
-      desc: "",
-    });
+    {
+    await addDestinationToApi(newDestination);
+    await getDestinationsFromApi();
+    }
+    resetForm();
   };
+
+
+
+  const addMoreImageFields = () =>{
+    if (imgFields.length < 5)
+      setImageFields(
+        [...imgFields, imgFields.length + 1]
+      )}
 
   return (
     <>
-      <div className="flex h-full text-white pt-5 flex-col items-center relative ">
+      <div className="flex h-full text-white pt-5 flex-col items-center relative overflow-auto">
         <h1 className="w-full text-center text-black font-fredericka font-semibold text-3xl mb-7">
           Destinations Settings
         </h1>
@@ -102,21 +184,32 @@ export default function DestinationsDash() {
                   <td className="py-2">{desti.id}</td>
                   <td>{desti.title}</td>
                   <td>{desti.weather}</td>
-                  <td>{desti.img}</td>
+                  <td>
+                    <div className="h-40 flex overflow-auto">
+                      {desti.image.map((imgSrc, index) => (
+                        <img
+                          key={index}
+                          className=" h-full w-full object-contain px-1"
+                          src={imgSrc}
+                          alt={`Desti ${desti.id} Image ${index}`}
+                        />
+                      ))}
+                    </div>
+                  </td>
                   <td className=" overflow-hidden overflow-ellipsis text-left px-2">
-                    {desti.desc}
+                    {desti.description}
                   </td>
                   <td>
                     <button
                       className="hover:underline hover:text-red-500"
-                      onClick={() => handleEditMode(index)}
+                      onClick={() => handleEditMode(desti.id)}
                     >
                       Edit
                     </button>
                     |
                     <button
                       className="hover:underline hover:text-red-500"
-                      onClick={() => handleDelete(index)}
+                      onClick={() => handleDelete(desti.id)}
                     >
                       Delete
                     </button>
@@ -133,6 +226,7 @@ export default function DestinationsDash() {
               className="p-2 py-1  my-7 rounded font-fredericka bg-blue-500"
               onClick={() => {
                 setNewFormVisibility(true);
+                resetForm();
               }}
             >
               Add New
@@ -144,15 +238,6 @@ export default function DestinationsDash() {
                   {editMode ? "Update Destination" : " Add New Destination"}
                 </h1>
                 <form className=" text-blue-500 text-xl">
-                  <label htmlFor="id">Id :</label>
-                  <input
-                    type="text"
-                    onChange={handleChange}
-                    value={newDestination.id}
-                    name="id"
-                    className="mb-4 mx-5 pl-2"
-                  ></input>
-                  <br />
                   <label htmlFor="title">Title :</label>
                   <input
                     type="text"
@@ -171,21 +256,35 @@ export default function DestinationsDash() {
                     className="mb-4 mx-5 pl-2"
                   ></input>
                   <br />
-                  <label htmlFor="img">Image :</label>
+                  <label htmlFor="image">
+                    Destination Images :
+                    <button
+                      type="button"
+                      onClick={addMoreImageFields}
+                      hidden={imgFields.length >= 5}
+                    >
+                      Add More
+                    </button>
+                  </label>
+                  {imgFields.map((index, imgIndex) => (
+                    <div key={index}>
+                      <label>Image {index} :</label>
+                      <input
+                        type="url"
+                        onChange={handleChange}
+                        value={newDestination.image[imgIndex]}
+                        name={`image-${imgIndex}`}
+                        alt={`Hotel {index} Index${imgIndex}`}
+                        className="mb-4 mx-5 overflow-auto"
+                      ></input>
+                    </div>
+                  ))}
+                  <label htmlFor="description">Description :</label>
                   <input
                     type="text"
                     onChange={handleChange}
-                    value={newDestination.img}
-                    name="img"
-                    className="mb-4 mx-5 pl-2 overflow-auto"
-                  ></input>
-                  <br />
-                  <label htmlFor="desc">Description :</label>
-                  <input
-                    type="text"
-                    onChange={handleChange}
-                    value={newDestination.desc}
-                    name="desc"
+                    value={newDestination.description}
+                    name="description"
                     className="mb-4 mx-5 overflow-auto"
                   ></input>
                   <br />
@@ -195,15 +294,14 @@ export default function DestinationsDash() {
                     onClick={handleSaveDestination}
                     className="bg-white px-2 mx-10"
                   >
-                    {editMode
-                      ? "Update Destination"
-                      : " Add Destination"}
+                    {editMode ? "Update Destination" : " Add Destination"}
                   </button>
                   <button
                     type="button"
                     className="bg-white px-2 pl-2"
                     onClick={() => {
                       setNewFormVisibility(false);
+                      resetForm();
                     }}
                   >
                     Cancel

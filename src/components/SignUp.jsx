@@ -1,17 +1,39 @@
 import React, { useEffect, useState } from "react";
 import signupboat from "../assets/signupboat.svg";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 function SignUp() {
 
   const [userCredentials, setCredentialsList] = useState([]);
   const [userData, setUserData] = useState({
     username : "",
-    name : "",
+    // name : "",
     email : "",
     password : "",
+      confirmPassword: ""
+     
   })
 
+  const addNewUser = async (newUser) =>{
+    try {
+      await axios.post(`http://localhost:5058/wandermate_backend/signup`, newUser);
+      console.log("Added", newUser)
+    } catch (error) {
+      console.log(error);
+    }
+  }
+
+  const submitUserInfo =(e) =>{
+ 
+   addNewUser(userData);
+   setUserData({
+     username: "",
+     email: "",
+     password: "",
+     confirmPassword: "",
+   });
+  }
 
   const saveCredentialsToLocalStorage = () => {
     const updatedList = [...userCredentials, userData];
@@ -22,12 +44,6 @@ function SignUp() {
   const handleSubmit = (e) => {
     e.preventDefault();
     saveCredentialsToLocalStorage();
-    setUserData({
-      username: "",
-      email: "",
-      password: "",
-      name: "",
-    });
   }
 
   const handleChange = (e) => {
@@ -53,7 +69,7 @@ function SignUp() {
                 value={userData.username}
                 onChange={handleChange}
               />
-              <input
+              {/* <input
                 className="border-2 bg-blue-100 border-blue-400 text-xl indent-5  w-full rounded-md "
                 type="text"
                 id="name"
@@ -61,7 +77,7 @@ function SignUp() {
                 name="name"
                 value={userData.name}
                 onChange={handleChange}
-              />
+              /> */}
               <input
                 className="border-2  border-blue-400 text-xl indent-5  w-full rounded-md"
                 type="email"
@@ -85,11 +101,20 @@ function SignUp() {
                 type="password"
                 id="confirmPassowrd"
                 placeholder="Confirm Password"
-                name="name"
-                value={userData.name}
+                name="confirmPassword"
+                value={userData.confirmPassword}
                 onChange={handleChange}
               />
-              <button className="w-full bg-blue-500 rounded-md">Sign Up</button>
+              <button type="submit" className="w-full bg-blue-500 rounded-md" onClick={()=>{
+            if (userData.password.length < 4) {
+               alert("Password must be at least 4 characters");
+             } else if (userData.password != userData.confirmPassword){
+              alert("Confirm password do not match!");
+             }else{
+              submitUserInfo();
+             }
+                
+              }}>Sign Up</button>
               <div className="flex justify-center -mt-2">
                 <input
                   id="termsConditions"
@@ -112,7 +137,7 @@ function SignUp() {
               ></img>
             </div>
             <p className="ml-3 py-1 px-1">
-              Already a Member?{" "}
+              Already a Member?
               <span className="text-blue-500">
                 <Link to="/signin">Sign In</Link>
               </span>

@@ -46,35 +46,19 @@ function TravelPage() {
             <div className="flex w-full h-[80vh]">
               <div className="w-[60%] pr-4 ">
                 <img
-                  src={travelPkg.Image}
+                  src={travelPkg.image[0]}
                   className="w-full h-full rounded-md object-cover"
                 ></img>
               </div>
               <div className="relative w-[40%] flex flex-wrap">
-                <div className="w-[50%] h-[50%] pr-2">
-                  <img
-                    src={travelPkg.Image}
-                    className="h-full object-cover rounded-md "
-                  ></img>
-                </div>
-                <div className="w-[50%] h-[50%] ">
-                  <img
-                    src={travelPkg.Image}
-                    className="h-full object-cover rounded-md "
-                  ></img>
-                </div>
-                <div className="w-[50%] h-[50%] pr-2 pt-2 ">
-                  <img
-                    src={travelPkg.Image}
-                    className="h-full object-cover rounded-md"
-                  ></img>
-                </div>
-                <div className="w-[50%] h-[50%] pt-2">
-                  <img
-                    src={travelPkg.Image}
-                    className="h-full object-cover rounded-md "
-                  ></img>
-                </div>
+                {travelPkg.image.slice(1).map((img, index) => (
+                  <div key={index} className="w-[50%] h-[50%] p-1">
+                    <img
+                      src={img}
+                      className="h-full object-cover rounded-md "
+                    ></img>
+                  </div>
+                ))}
               </div>
             </div>
             <div className="flex w-full my-4 gap-6 font-fredericka text-2xl">
@@ -108,13 +92,13 @@ function TravelPage() {
               <span className="text-2xl font-bold font-fredericka ">
                 <GiveStars rating={travelPkg.rating} />
               </span>
-              <p className="w-[75%] font-fredericka">{travelPkg.Description}</p>
+              <p className="w-[75%] font-fredericka">{travelPkg.description}</p>
               <button className="absolute right-[10%] top-[40%] bg-blue-500 py-2 px-5 rounded text-white font-mono">
                 Book Now
               </button>
             </div>
             <div id="location" className="bg-emerald-100 w-full h-[400px] my-4">
-              <MapComponent locationName={travelPkg.Title} />
+              <MapComponent locationName={travelPkg.title} />
             </div>
             <div id="reviews">
               <Reviews hotelId={travelPkg.id} />

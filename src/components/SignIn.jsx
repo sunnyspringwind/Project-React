@@ -1,36 +1,55 @@
 import React, { useState, useEffect } from "react";
 import signin from "../assets/signin.svg";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
-function SignIn() {
-
-  const [userCredentials, setCredentialsList] = useState([]);
+function SignIn({ setIsAuthenticated }) {
+  const navigate = useNavigate();
 
   let [formData, setFormData] = useState({
-    username : "",
-    password : ""
+    username: "",
+    password: "",
   });
 
-  const getCredentialsFromLocalStorage = () => {
-    const storedData = localStorage.getItem("userCredentials");
-   
-    if (storedData) {
-      const data = JSON.parse(storedData);
-      setCredentialsList(data);
-    } 
-  };
-  useEffect(() => getCredentialsFromLocalStorage, []);
+  // const getCredentialsFromLocalStorage = () => {
+  //   const storedData = localStorage.getItem("userCredentials");
+
+  // if (storedData) {
+  //   const data = JSON.parse(storedData);
+  //   setCredentialsList(data);
+  // }
+  // };
+  // useEffect(() => getCredentialsFromLocalStorage, []);
 
   const handleSubmit = (e) => {
-    e.preventDefault(); 
-    console.log("submitted", formData);
-  }
+    e.preventDefault();
+    LoginUser();
+  };
 
   const handleChange = (e) => {
-    const {name, value} = e.target;
-    setFormData({...formData, [name]:value})
-  }
-  console.log("data",userCredentials);
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+
+  const LoginUser = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:5058/wandermate_backend/Account/login",
+        formData
+      );
+      if (response.statusText === "OK") {
+        setFormData({ username: "", password: "" });
+        console.log(response.data, "this is the data");
+        const { token } = response.data;
+        localStorage.setItem("token", token);
+        setIsAuthenticated(true);
+        navigate("/home");
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  // console.log("data", userCredentials);
 
   return (
     <>
@@ -41,7 +60,7 @@ function SignIn() {
           </h1>
 
           <form
-            onSubmit={handleSubmit}
+            onSubmit={(e) => handleSubmit(e)} //
             className="grid gap-[2rem] w-full h-full"
           >
             <input
@@ -95,4 +114,5 @@ function SignIn() {
     </>
   );
 }
+
 export default SignIn;

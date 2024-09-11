@@ -44,15 +44,15 @@ console.log("works");
 
   return (
     <>
-      {imgCard.img && (
+      {imgCard.image && (
         <img
-          src={imgCard.img}
+          src={imgCard.image[0]}
           className="absolute w-full h-[92%] object-cover rounded-lg"
           alt={imgCard.title}
         />
       )}
       {imgCard.title && (
-        <h1 className="bg-white rounded-lg font-fredericka ml-[79%] mt-4 font-semibold text-2xl absolute p-4 text-center">
+        <h1 className="bg-white rounded-lg font-fredericka ml-[79%] mt-4 font-semibold text-2xl absolute p-4 text-center mr-2">
           Explore <span className="text-orange-400">{imgCard.title}</span>
         </h1>
       )}

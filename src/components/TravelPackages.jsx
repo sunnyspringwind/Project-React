@@ -8,6 +8,7 @@ import GiveStars from "../utils/GiveStars";
 
 function TravelPackages() {
 
+  const randomRating = () => Math.floor(Math.random() * 5) + 1;
     const checkMark = <span className=" text-black pr-2"> &#x2713;</span>;
     const [travelPackages, addPackages] = useState([])
     const [route, setRoute] = useState(``);
@@ -30,14 +31,14 @@ function TravelPackages() {
             {travelPackages.map((travelPkg, index) => (
               <div key={index} className="relative w-full h-4/6 shadow-lg flex mb-5 overflow-hidden gap-5 ">
                 <div className=" w-2/4 h-full object-cover">
-                  <img src={travelPkg.img}></img>
+                  <img src={travelPkg.image[0]}></img>
                 </div>
                 <div className=" w-2/4 h-full flex justify-center items-center flex-col gap-2">
                   <span className="font-semibold text-xl">
-                    {travelPkg.name}
+                    {travelPkg.title}
                   </span>
                   <span className="font-semibold text-xl">
-                    ${travelPkg.price}
+                    vibes : {travelPkg.weather}
                   </span>
 
                   <Link
@@ -53,7 +54,7 @@ function TravelPackages() {
                     </li>
                     <li>{checkMark}Reserve now, pay at stay</li>
                     <li className="ml-5">
-                      <GiveStars rating={5} />
+                      <GiveStars rating={randomRating()} />
                     </li>
                   </ul>
                 </div>

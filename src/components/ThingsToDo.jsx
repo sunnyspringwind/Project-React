@@ -24,7 +24,7 @@ const ThingsToDo = () => {
         onClick={changeVisibility}
         className=" w-full h-10 text-left pl-2 flex items-center font-serif text-2xl mb-2"
       >
-        <img className="h-8 w-8 rounded-3xl mr-2" src={thingsToDo[1].img} />
+        <img className="h-8 w-8 rounded-3xl mr-2" src={thingsToDo[0].image[0]} />
         Things To Do
       </button>
 
@@ -37,7 +37,7 @@ const ThingsToDo = () => {
               className="relative h-[310px] rounded-lg overflow-hidden m-2 hover:-translate-y-4"
             >
               <img
-                src={thing.img}
+                src={thing.image[0]}
                 className="h-full object-cover rounded-lg "
               />
               <button className=" absolute top-3 left-3 ">

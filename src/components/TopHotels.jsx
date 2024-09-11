@@ -13,7 +13,7 @@ const TopHotels = () => {
 
 
   useEffect(() => {
-    FetchData("hotels", setTopHotels);
+    FetchData("hotel", setTopHotels);
   }, []); // Empty dependency array ensures this runs only once
  
    if (!topHotels || topHotels.length === 0) {
@@ -29,7 +29,7 @@ const TopHotels = () => {
         onClick={changeVisibility}
         className=" w-full h-10 text-left pl-2 mb-2 flex items-center  font-serif text-2xl "
       >
-        <img className="h-8 w-8 rounded-3xl mr-2" src={topHotels[1].img} />
+        <img className="h-8 w-8 rounded-3xl mr-2" src={topHotels[0].image[0]} />
         Top Hotels
       </button>
 
@@ -41,7 +41,7 @@ const TopHotels = () => {
               key={hotel.id}
               className="relative h-[310px] rounded-lg overflow-hidden m-2 hover:-translate-y-4"
             >
-              <img src={hotel.img} className="h-full w-full object-cover " />
+              <img src={hotel.image[0]} className="h-full w-full object-cover " />
               <button className="absolute top-3 left-3 ">
                 <HeartIcon />
               </button>

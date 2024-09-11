@@ -56,35 +56,17 @@ function HotelPage() {
               <div className="flex w-full h-[80vh]">
                 <div className="w-[60%] pr-4 ">
                   <img
-                    src={hotel.image}
+                    src={hotel.image[0]}
                     className="w-full h-full rounded-md object-cover"
                   ></img>
                 </div>
                 <div className="relative w-[40%] flex flex-wrap">
-                  <div className="w-[50%] h-[50%] pr-2">
-                    <img
-                      src={hotel.image}
-                      className="h-full object-cover rounded-md "
-                    ></img>
-                  </div>
-                  <div className="w-[50%] h-[50%] ">
-                    <img
-                      src={hotel.image}
-                      className="h-full object-cover rounded-md "
-                    ></img>
-                  </div>
-                  <div className="w-[50%] h-[50%] pr-2 pt-2 ">
-                    <img
-                      src={hotel.image}
-                      className="h-full object-cover rounded-md"
-                    ></img>
-                  </div>
-                  <div className="w-[50%] h-[50%] pt-2">
-                    <img
-                      src={hotel.image}
-                      className="h-full object-cover rounded-md "
-                    ></img>
-                  </div>
+                  {hotel.image.slice(1).map((img, index)=>
+ <div key={index} className="w-[50%] h-[50%] p-1">
+  <img src={img} className="h-full object-cover rounded-md "></img>
+</div> 
+                  )}
+
                 </div>
               </div>
               <div className="flex w-full my-4 gap-6 font-fredericka text-2xl">
